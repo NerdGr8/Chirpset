@@ -1,0 +1,528 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chirpset — Brand Toolkit v1.1</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:oklch(10% 0.005 250);--bg-surface:oklch(14% 0.006 250);--bg-card:oklch(17% 0.006 250);
+  --fg:oklch(95% 0.004 250);--fg-sec:oklch(75% 0.008 250);--fg-muted:oklch(52% 0.01 250);
+  --border:oklch(28% 0.005 250);--border-lt:oklch(22% 0.004 250);
+  --green:oklch(72% 0.19 150);--amber:oklch(78% 0.17 85);--blue:oklch(62% 0.18 260);--red:oklch(62% 0.22 25);
+  --font-d:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif;
+  --font-b:-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif;
+  --font-m:'SF Mono',Menlo,ui-monospace,monospace;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-b);background:var(--bg);color:var(--fg);line-height:1.5;overflow-x:hidden}
+::selection{background:oklch(72% 0.19 150 / 0.3);color:#fff}
+
+.nav{position:fixed;top:0;left:0;right:0;height:48px;background:rgba(10,10,14,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:0.5px solid var(--border-lt);display:flex;align-items:center;justify-content:space-between;padding:0 32px;z-index:100;font-size:13px}
+.nav-logo{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--fg);text-decoration:none}
+.nav-links{display:flex;gap:24px}
+.nav-links a{color:var(--fg-muted);text-decoration:none;font-size:12px;font-weight:500;letter-spacing:0.02em;transition:color .15s}
+.nav-links a:hover{color:var(--fg-sec)}
+.badge{font-size:9px;font-weight:700;background:var(--green);color:#000;padding:2px 6px;border-radius:3px;letter-spacing:.05em;text-transform:uppercase}
+
+.sec{padding:80px 32px;max-width:1120px;margin:0 auto}
+.sec-lbl{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:12px}
+.sec-title{font-family:var(--font-d);font-size:clamp(28px,4vw,40px);font-weight:800;letter-spacing:-.03em;margin-bottom:12px;line-height:1.15}
+.sec-desc{font-size:15px;color:var(--fg-muted);max-width:560px;line-height:1.6}
+.divider{height:1px;background:var(--border-lt);margin:0 auto;max-width:1120px}
+
+/* Hero */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 32px 80px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:50%;left:50%;width:600px;height:600px;transform:translate(-50%,-50%);background:radial-gradient(circle,oklch(72% 0.19 150 / 0.06) 0%,transparent 70%);pointer-events:none}
+.hero-bird{margin-bottom:40px;animation:hero-float 5s ease-in-out infinite}
+@keyframes hero-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.hero-title{font-family:var(--font-d);font-size:clamp(48px,8vw,88px);font-weight:900;letter-spacing:-.04em;line-height:.95;margin-bottom:16px;background:linear-gradient(180deg,var(--fg) 30%,var(--fg-muted) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-tag{font-size:clamp(16px,2.5vw,22px);color:var(--fg-muted);font-weight:400;letter-spacing:-.01em;margin-bottom:32px;max-width:480px}
+.hero-meta{display:flex;gap:24px;font-size:12px;color:var(--fg-muted);font-family:var(--font-m)}
+.hero-ctas{display:flex;gap:12px;margin-top:32px}
+.cta{display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;font-family:var(--font-b);cursor:pointer;text-decoration:none;transition:all .15s}
+.cta-p{background:var(--green);color:#000;border:none}.cta-p:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.cta-s{background:transparent;color:var(--fg-sec);border:.5px solid var(--border)}.cta-s:hover{border-color:var(--fg-muted);background:var(--bg-card)}
+
+/* Bird animations */
+@keyframes led-blink{0%,85%,100%{opacity:1}88%{opacity:.2}}
+@keyframes wave-pulse{0%,60%,100%{opacity:.2;transform:scale(1)}65%,88%{opacity:.55;transform:scale(1.03)}}
+@keyframes beak-pulse{0%,55%,100%{transform:scale(1)}60%,75%{transform:scale(1.06)}}
+.bird-led{animation:led-blink 3.5s ease-in-out infinite}
+.bird-w1{animation:wave-pulse 3s ease-in-out infinite}
+.bird-w2{animation:wave-pulse 3s ease-in-out infinite .12s}
+.bird-beak-anim{animation:beak-pulse 3s ease-in-out infinite;transform-origin:60px 65px}
+
+/* Logo grid */
+.logo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:40px}
+.logo-card{background:var(--bg-card);border:.5px solid var(--border-lt);border-radius:12px;padding:32px;display:flex;flex-direction:column;align-items:center;gap:16px;transition:border-color .15s}
+.logo-card:hover{border-color:var(--border)}
+.logo-card-lbl{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--fg-muted)}
+
+/* Do/Don't */
+.do-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:32px}
+.do-card{background:var(--bg-card);border:.5px solid var(--border-lt);border-radius:10px;padding:20px;text-align:center;position:relative}
+.do-tag{position:absolute;top:8px;right:10px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.do-tag.y{color:var(--green)}.do-tag.n{color:var(--red)}
+.do-card-text{font-size:11px;color:var(--fg-muted);line-height:1.4;margin-top:8px}
+
+/* Colors */
+.clr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:32px}
+.clr-sw{border-radius:10px;overflow:hidden;border:.5px solid var(--border-lt);cursor:pointer;transition:border-color .15s}
+.clr-sw:hover{border-color:var(--border)}
+.clr-fill{height:72px}
+.clr-info{padding:10px 12px;background:var(--bg-card)}
+.clr-name{font-size:12px;font-weight:600;color:var(--fg);margin-bottom:2px}
+.clr-val{font-size:10px;font-family:var(--font-m);color:var(--fg-muted);display:flex;justify-content:space-between;align-items:center}
+.clr-val button{background:none;border:none;color:var(--fg-muted);cursor:pointer;font-size:10px;padding:2px 4px;border-radius:3px;font-family:var(--font-m)}
+.clr-val button:hover{color:var(--fg-sec);background:rgba(255,255,255,.05)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none;z-index:200}
+.toast.show{opacity:1}
+
+/* Typography */
+.type-row{display:flex;align-items:baseline;gap:24px;padding:20px 0;border-bottom:.5px solid var(--border-lt)}
+.type-row:last-child{border-bottom:none}
+.type-sample{flex:1;min-width:0}
+.type-meta{width:200px;flex-shrink:0;text-align:right}
+.type-meta-n{font-size:12px;font-weight:600;color:var(--fg-sec)}
+.type-meta-d{font-size:10px;font-family:var(--font-m);color:var(--fg-muted);margin-top:2px}
+
+/* App icon grid */
+.icon-grid{display:flex;flex-wrap:wrap;gap:24px;margin-top:32px;align-items:end}
+.icon-cell{display:flex;flex-direction:column;align-items:center;gap:8px}
+.icon-cell-lbl{font-size:10px;font-family:var(--font-m);color:var(--fg-muted)}
+
+/* Launch mockup */
+.launch-wrap{display:flex;gap:40px;margin-top:40px;align-items:flex-start;flex-wrap:wrap}
+.launch-box{background:#000;border-radius:16px;overflow:hidden;border:.5px solid var(--border-lt);box-shadow:0 24px 64px rgba(0,0,0,.4);flex-shrink:0}
+.launch-inner{width:640px;height:400px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;background:radial-gradient(ellipse at 50% 40%,oklch(15% .01 250),oklch(8% .005 250))}
+.launch-inner::before{content:'';position:absolute;top:30%;left:50%;width:400px;height:400px;transform:translate(-50%,-50%);background:radial-gradient(circle,oklch(72% .19 150 / .08) 0%,transparent 60%);pointer-events:none}
+.launch-name{font-family:var(--font-d);font-size:36px;font-weight:800;letter-spacing:-.03em;margin-bottom:6px;margin-top:24px}
+.launch-sub{font-size:14px;color:var(--fg-muted);letter-spacing:.01em}
+.launch-bar{margin-top:32px;width:120px;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.launch-bar-fill{height:100%;width:30%;background:var(--green);border-radius:2px;animation:load-slide 2s ease-in-out infinite}
+@keyframes load-slide{0%{width:0;margin-left:0}50%{width:60%}100%{width:0;margin-left:100%}}
+.launch-specs{flex:1;min-width:280px}
+.launch-specs h3{font-size:14px;font-weight:700;margin-bottom:12px}
+.spec-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:.5px solid var(--border-lt);font-size:12px}
+.spec-row:last-child{border-bottom:none}
+.spec-l{color:var(--fg-muted)}
+.spec-v{color:var(--fg-sec);font-family:var(--font-m);font-size:11px}
+
+/* Marketing */
+.mkt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;margin-top:32px}
+.mkt-card{background:var(--bg-card);border:.5px solid var(--border-lt);border-radius:14px;overflow:hidden;transition:border-color .15s}
+.mkt-card:hover{border-color:var(--border)}
+.mkt-preview{padding:32px;display:flex;align-items:center;justify-content:center;min-height:200px;position:relative}
+.mkt-body{padding:16px 20px 20px;border-top:.5px solid var(--border-lt)}
+.mkt-title{font-size:13px;font-weight:700;margin-bottom:4px}
+.mkt-desc{font-size:11px;color:var(--fg-muted);line-height:1.5}
+.mkt-meta{font-size:10px;font-family:var(--font-m);color:var(--fg-muted);margin-top:8px;opacity:.6}
+
+.footer{padding:40px 32px;text-align:center;color:var(--fg-muted);font-size:12px;border-top:.5px solid var(--border-lt);margin-top:80px}
+.footer a{color:var(--green);text-decoration:none}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="#" class="nav-logo" id="nav-logo"></a>
+  <div class="nav-links">
+    <a href="#logo">Logo</a><a href="#colors">Colors</a><a href="#type">Typography</a><a href="#icon">Icon</a><a href="#launch">Launch</a><a href="#marketing">Marketing</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-bird" id="hero-bird"></div>
+  <h1 class="hero-title">Chirpset</h1>
+  <p class="hero-tag">The menu bar companion for every maker's workbench. Serial enumeration, firmware flashing, and log monitoring — one click away.</p>
+  <div class="hero-meta"><span>Brand Toolkit v1.1</span><span>June 2026</span><span>Symmetric Mark</span></div>
+  <div class="hero-ctas">
+    <a href="#logo" class="cta cta-p">Explore brand system ↓</a>
+    <a href="#marketing" class="cta cta-s">Marketing assets</a>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section class="sec" id="logo">
+  <div class="sec-lbl">01 — Logo System</div>
+  <div class="sec-title">The Symmetric Mark</div>
+  <p class="sec-desc">A front-facing robotic bird — perfectly bilateral. Two watchful eyes, a centered diamond beak, mirrored angular wings, and dual sound-wave arcs. The antenna LED pulses green when scanning. Circuit-board traces on the body root it in hardware.</p>
+  <div class="logo-grid" id="logo-grid"></div>
+
+  <h3 style="font-size:16px;font-weight:700;color:var(--fg-sec);margin-top:48px;margin-bottom:16px">Usage guidelines</h3>
+  <div class="do-grid">
+    <div class="do-card"><span class="do-tag y">✓ Do</span><div id="do-use"></div><div class="do-card-text">Use approved mark variations at any size above 16 px.</div></div>
+    <div class="do-card"><span class="do-tag n">✗ Don't</span><div id="do-rotate"></div><div class="do-card-text">Don't rotate, skew, or distort the mark.</div></div>
+    <div class="do-card"><span class="do-tag n">✗ Don't</span><div id="do-recolor"></div><div class="do-card-text">Don't apply arbitrary colors outside the palette.</div></div>
+    <div class="do-card"><span class="do-tag n">✗ Don't</span><div id="do-shadow"></div><div class="do-card-text">No drop shadows, outlines, or effects.</div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section class="sec" id="colors">
+  <div class="sec-lbl">02 — Color Palette</div>
+  <div class="sec-title">Brand Colors</div>
+  <p class="sec-desc">Dark-first, born from the macOS menu bar. Amber carries the bird's identity. Green signals scanning and status. Click any swatch to copy.</p>
+  <div class="clr-grid" id="clr-grid"></div>
+</section>
+
+<div class="divider"></div>
+
+<section class="sec" id="type">
+  <div class="sec-lbl">03 — Typography</div>
+  <div class="sec-title">Type System</div>
+  <p class="sec-desc">SF Pro for all UI and marketing. SF Mono for device paths, VID/PID codes, and tool output. Weight contrast is the primary hierarchy tool.</p>
+  <div id="type-specs"></div>
+</section>
+
+<div class="divider"></div>
+
+<section class="sec" id="icon">
+  <div class="sec-lbl">04 — App Icon</div>
+  <div class="sec-title">App Icon</div>
+  <p class="sec-desc">Symmetric bird on a dark squircle with a subtle green radial glow. 22.37 % continuous corners. Vector — scales to any resolution.</p>
+  <div class="icon-grid" id="icon-grid"></div>
+  <h3 style="font-size:16px;font-weight:700;color:var(--fg-sec);margin-top:48px;margin-bottom:16px">Specifications</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
+    <div style="background:var(--bg-card);border:.5px solid var(--border-lt);border-radius:10px;padding:16px 20px"><div style="font-size:12px;font-weight:600;margin-bottom:4px">Background</div><div style="font-size:11px;color:var(--fg-muted);font-family:var(--font-m)">oklch(12% 0.008 250) · radial green glow</div></div>
+    <div style="background:var(--bg-card);border:.5px solid var(--border-lt);border-radius:10px;padding:16px 20px"><div style="font-size:12px;font-weight:600;margin-bottom:4px">Corner radius</div><div style="font-size:11px;color:var(--fg-muted);font-family:var(--font-m)">22.37 % (macOS continuous)</div></div>
+    <div style="background:var(--bg-card);border:.5px solid var(--border-lt);border-radius:10px;padding:16px 20px"><div style="font-size:12px;font-weight:600;margin-bottom:4px">Inset</div><div style="font-size:11px;color:var(--fg-muted);font-family:var(--font-m)">Bird mark inset 16 % from edges</div></div>
+    <div style="background:var(--bg-card);border:.5px solid var(--border-lt);border-radius:10px;padding:16px 20px"><div style="font-size:12px;font-weight:600;margin-bottom:4px">Export sizes</div><div style="font-size:11px;color:var(--fg-muted);font-family:var(--font-m)">16 · 32 · 64 · 128 · 256 · 512 · 1024</div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section class="sec" id="launch">
+  <div class="sec-lbl">05 — Launch Screen</div>
+  <div class="sec-title">Splash Screen</div>
+  <p class="sec-desc">Shown on cold launch. Dark, quiet, centered mark with green glow and indeterminate loading bar.</p>
+  <div class="launch-wrap">
+    <div class="launch-box">
+      <div class="launch-inner" id="launch-mockup"></div>
+    </div>
+    <div class="launch-specs">
+      <h3>Specifications</h3>
+      <div class="spec-row"><span class="spec-l">Window</span><span class="spec-v">480 × 300 pt (centered)</span></div>
+      <div class="spec-row"><span class="spec-l">Background</span><span class="spec-v">oklch(8% 0.005 250) + radial glow</span></div>
+      <div class="spec-row"><span class="spec-l">Mark size</span><span class="spec-v">80 × 74 pt (centered)</span></div>
+      <div class="spec-row"><span class="spec-l">App name</span><span class="spec-v">SF Pro Display · 800 · 36 pt</span></div>
+      <div class="spec-row"><span class="spec-l">Tagline</span><span class="spec-v">SF Pro Text · 400 · 14 pt · muted</span></div>
+      <div class="spec-row"><span class="spec-l">Loading bar</span><span class="spec-v">120 × 3 pt · green · indeterminate</span></div>
+      <div class="spec-row"><span class="spec-l">Duration</span><span class="spec-v">~1.2 s or until IOKit scan drains</span></div>
+      <div style="margin-top:16px;padding:12px;background:oklch(72% .19 150 / .08);border:.5px solid oklch(72% .19 150 / .15);border-radius:8px;font-size:11px;color:var(--green);line-height:1.5"><strong>Note:</strong> The splash dismisses once the initial IOKit scan completes — typically under 800 ms. It's perceptual, not a loading gate.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section class="sec" id="marketing">
+  <div class="sec-lbl">06 — Marketing</div>
+  <div class="sec-title">Launch Assets</div>
+  <p class="sec-desc">Ready-made assets for website, social, and product listing — all from the same mark, palette, and type system.</p>
+  <div class="mkt-grid" id="mkt-grid"></div>
+</section>
+
+<footer class="footer">Chirpset Brand Toolkit v1.1 · June 2026 · <a href="#">chirpset.app</a></footer>
+<div class="toast" id="toast">Copied!</div>
+
+<script>
+/* ─── Bird SVG Generator ────────────────────
+   Symmetric front-facing robotic bird.
+   viewBox 0 0 120 110 — centred at x=60.  */
+function bird(w, h, o = {}) {
+  const {
+    anim = false,    // CSS animations
+    mono = false,    // single currentColor
+    light = false,   // light-bg variant
+    glow = false,    // green glow behind
+    wings = true,    // include angular wings
+    feet = true,     // include feet
+    traces = true,   // circuit traces on body
+    outerWaves = true // outer sound arcs
+  } = o;
+
+  /* Colour tokens */
+  const C = mono ? {
+    body: 'currentColor', bodyHi: 'currentColor',
+    wing: 'currentColor', beak: 'currentColor',
+    led: 'currentColor', ledGlow: 'currentColor',
+    eye: 'currentColor', hi: 'currentColor',
+    wave: 'currentColor', trace: 'currentColor',
+    foot: 'currentColor'
+  } : light ? {
+    body: '#C48820', bodyHi: 'rgba(255,255,255,0.05)',
+    wing: '#A87418', beak: '#A87418',
+    led: '#2DA85E', ledGlow: '#2DA85E',
+    eye: '#0a0a0e', hi: 'rgba(255,255,255,0.8)',
+    wave: '#2DA85E', trace: 'rgba(0,0,0,0.08)',
+    foot: '#A87418'
+  } : {
+    body: '#E8A838', bodyHi: 'rgba(255,255,255,0.06)',
+    wing: '#C48820', beak: '#D49030',
+    led: '#3FD97F', ledGlow: '#3FD97F',
+    eye: '#0a0a0e', hi: 'rgba(255,255,255,0.85)',
+    wave: '#3FD97F', trace: 'rgba(0,0,0,0.10)',
+    foot: '#E8A838'
+  };
+
+  const ledCls = anim ? 'bird-led' : '';
+  const w1Cls  = anim ? 'bird-w1'  : '';
+  const w2Cls  = anim ? 'bird-w2'  : '';
+  const beakCls = anim ? 'bird-beak-anim' : '';
+
+  let s = `<svg width="${w}" height="${h}" viewBox="0 0 120 110" fill="none" xmlns="http://www.w3.org/2000/svg">`;
+
+  /* Glow */
+  if (glow) s += `<circle cx="60" cy="50" r="42" fill="${C.ledGlow}" opacity="0.08"/>`;
+
+  /* Wings — mirrored angular shapes */
+  if (wings) {
+    s += `<path d="M34 42 L10 30 L16 42 L5 35 L18 49 L34 55 Z" fill="${C.wing}" opacity="0.6"/>`;
+    s += `<path d="M86 42 L110 30 L104 42 L115 35 L102 49 L86 55 Z" fill="${C.wing}" opacity="0.6"/>`;
+  }
+
+  /* Body — egg / shield */
+  s += `<path d="M34 38 C34 22 86 22 86 38 L86 78 C86 94 34 94 34 78 Z" fill="${C.body}"/>`;
+
+  /* Body highlight */
+  s += `<path d="M38 36 C38 26 82 26 82 36 L82 54 C82 60 38 60 38 54 Z" fill="${C.bodyHi}"/>`;
+
+  /* Circuit traces — symmetric pairs */
+  if (traces) {
+    s += `<line x1="40" y1="54" x2="50" y2="54" stroke="${C.trace}" stroke-width="1.2"/>`;
+    s += `<circle cx="50" cy="54" r="1.5" fill="${C.trace}"/>`;
+    s += `<line x1="70" y1="54" x2="80" y2="54" stroke="${C.trace}" stroke-width="1.2"/>`;
+    s += `<circle cx="70" cy="54" r="1.5" fill="${C.trace}"/>`;
+    s += `<line x1="40" y1="78" x2="48" y2="78" stroke="${C.trace}" stroke-width="1.2"/>`;
+    s += `<line x1="72" y1="78" x2="80" y2="78" stroke="${C.trace}" stroke-width="1.2"/>`;
+  }
+
+  /* Antenna */
+  s += `<line x1="60" y1="22" x2="60" y2="7" stroke="${C.body}" stroke-width="2.5" stroke-linecap="round"/>`;
+  s += `<circle class="${ledCls}" cx="60" cy="4.5" r="4.5" fill="${C.led}"/>`;
+  s += `<circle cx="60" cy="4.5" r="8" fill="${C.ledGlow}" opacity="0.12"/>`;
+
+  /* Eyes */
+  s += `<circle cx="48" cy="46" r="6" fill="${C.eye}"/>`;
+  s += `<circle cx="72" cy="46" r="6" fill="${C.eye}"/>`;
+  s += `<circle cx="49.5" cy="44.5" r="2" fill="${C.hi}"/>`;
+  s += `<circle cx="73.5" cy="44.5" r="2" fill="${C.hi}"/>`;
+
+  /* Beak — diamond */
+  s += `<path class="${beakCls}" d="M60 56 L66.5 64 L60 72 L53.5 64 Z" fill="${C.beak}"/>`;
+
+  /* Sound waves — inner pair (symmetric) */
+  s += `<path class="${w1Cls}" d="M50 60 C43.5 54 41 63 45.5 69" stroke="${C.wave}" stroke-width="1.8" fill="none" opacity="0.35"/>`;
+  s += `<path class="${w1Cls}" d="M70 60 C76.5 54 79 63 74.5 69" stroke="${C.wave}" stroke-width="1.8" fill="none" opacity="0.35"/>`;
+
+  /* Sound waves — outer pair */
+  if (outerWaves) {
+    s += `<path class="${w2Cls}" d="M44 55 C35 47 32 60 39 72" stroke="${C.wave}" stroke-width="1.4" fill="none" opacity="0.15"/>`;
+    s += `<path class="${w2Cls}" d="M76 55 C85 47 88 60 81 72" stroke="${C.wave}" stroke-width="1.4" fill="none" opacity="0.15"/>`;
+  }
+
+  /* Feet */
+  if (feet) {
+    s += `<line x1="48" y1="92" x2="43" y2="106" stroke="${C.foot}" stroke-width="2" stroke-linecap="round" opacity="0.7"/>`;
+    s += `<line x1="72" y1="92" x2="77" y2="106" stroke="${C.foot}" stroke-width="2" stroke-linecap="round" opacity="0.7"/>`;
+    s += `<line x1="37" y1="106" x2="49" y2="106" stroke="${C.foot}" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>`;
+    s += `<line x1="71" y1="106" x2="83" y2="106" stroke="${C.foot}" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>`;
+  }
+
+  s += `</svg>`;
+  return s;
+}
+
+/* Horizontal lockup: bird + wordmark */
+function birdLockupH(w, opts = {}) {
+  const birdW = Math.round(w * 0.22);
+  const birdH = Math.round(birdW * 110 / 120);
+  const textX = birdW + 10;
+  const fontSize = Math.round(w * 0.1);
+  const { mono = false, light = false } = opts;
+  const textFill = mono ? 'currentColor' : light ? '#1a1a1e' : '#F0F0F6';
+  return `<svg width="${w}" height="${birdH + 4}" viewBox="0 0 ${w} ${birdH + 4}" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(0,2)">${bird(birdW, birdH, { mono, light, outerWaves: false, traces: false })}</g>
+    <text x="${textX}" y="${birdH - Math.round(birdH * 0.15)}" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif" font-size="${fontSize}" font-weight="800" fill="${textFill}" letter-spacing="${Math.round(-fontSize * 0.04)}">Chirpset</text>
+  </svg>`;
+}
+
+/* Stacked lockup: bird above wordmark */
+function birdLockupV(w, opts = {}) {
+  const { mono = false, light = false } = opts;
+  const birdW = w;
+  const birdH = Math.round(w * 110 / 120);
+  const fontSize = Math.round(w * 0.14);
+  const textFill = mono ? 'currentColor' : light ? '#1a1a1e' : '#F0F0F6';
+  const totalH = birdH + 8 + fontSize + 4;
+  return `<svg width="${w}" height="${totalH}" viewBox="0 0 ${w} ${totalH}" fill="none" xmlns="http://www.w3.org/2000/svg">
+    ${bird(birdW, birdH, { mono, light, outerWaves: false })}
+    <text x="${w/2}" y="${birdH + 8 + fontSize}" font-family="-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif" font-size="${fontSize}" font-weight="800" fill="${textFill}" letter-spacing="${Math.round(-fontSize * 0.035)}" text-anchor="middle">Chirpset</text>
+  </svg>`;
+}
+
+/* App-icon sized bird on dark squircle */
+function appIcon(px) {
+  const pad = px * 0.16;
+  const birdSize = px - pad * 2;
+  const birdH = Math.round(birdSize * 110 / 120);
+  const oy = Math.round((px - birdH) / 2);
+  const r = Math.round(px * 0.2237);
+  return `<div style="width:${px}px;height:${px}px;background:oklch(12% 0.008 250);border-radius:${r}px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;border:0.5px solid rgba(255,255,255,0.06)">
+    <div style="position:absolute;top:50%;left:50%;width:${Math.round(px*0.6)}px;height:${Math.round(px*0.6)}px;transform:translate(-50%,-50%);background:radial-gradient(circle,oklch(72% 0.19 150 / 0.12) 0%,transparent 70%)"></div>
+    <div style="position:relative;z-index:1;margin-top:-${Math.round(px*0.02)}px">${bird(birdSize, birdH, { outerWaves: px >= 64, traces: px >= 64, feet: px >= 48 })}</div>
+  </div>`;
+}
+
+/* ─── Colour palette ─────────────────────── */
+const palette = [
+  { name:'Midnight',     role:'Background',   hex:'#111118' },
+  { name:'Charcoal',     role:'Surface',      hex:'#1E1E26' },
+  { name:'Slate',        role:'Border',       hex:'#2E2E38' },
+  { name:'Iron',         role:'Muted text',   hex:'#65657A' },
+  { name:'Silver',       role:'Secondary text',hex:'#B0B0C0' },
+  { name:'Snow',         role:'Primary text', hex:'#F0F0F6' },
+  { name:'Circuit Green',role:'Accent · Status',hex:'#3FD97F' },
+  { name:'Amber Bird',   role:'Mark · Identity',hex:'#E8A838' },
+  { name:'Flash Blue',   role:'Action · Progress',hex:'#3B7FED' },
+  { name:'Error Red',    role:'Error · Disconnect',hex:'#D94545' },
+];
+
+function copyVal(v) {
+  navigator.clipboard.writeText(v).catch(()=>{});
+  const t = document.getElementById('toast');
+  t.textContent = 'Copied: ' + v;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1500);
+}
+
+/* ─── Render everything ───────────────────── */
+function init() {
+  /* Nav logo */
+  document.getElementById('nav-logo').innerHTML = bird(20, 18, { outerWaves: false, traces: false, feet: false }) +
+    `<span style="font-family:var(--font-d);font-size:13px;font-weight:700">Chirpset</span>` +
+    `<span class="badge">v1.1 Symmetric</span>`;
+
+  /* Hero bird */
+  document.getElementById('hero-bird').innerHTML = bird(140, 128, { anim: true, glow: true });
+
+  /* Logo grid */
+  const logoGrid = document.getElementById('logo-grid');
+  logoGrid.innerHTML = `
+    <div class="logo-card"><div class="logo-card-lbl">Mark only</div>${bird(70, 64)}</div>
+    <div class="logo-card"><div class="logo-card-lbl">Horizontal lockup</div>${birdLockupH(220)}</div>
+    <div class="logo-card"><div class="logo-card-lbl">Stacked lockup</div>${birdLockupV(80)}</div>
+    <div class="logo-card" style="background:#000"><div class="logo-card-lbl" style="color:#888">On black</div>${birdLockupH(220)}</div>
+    <div class="logo-card" style="background:#f5f5f7"><div class="logo-card-lbl" style="color:#666">On light</div>${birdLockupH(220, { light: true })}</div>
+    <div class="logo-card"><div class="logo-card-lbl">Single color (mono)</div>${birdLockupH(220, { mono: true })}</div>
+  `;
+
+  /* Do / Don't thumbnails */
+  document.getElementById('do-use').innerHTML = bird(48, 44, { outerWaves: false, feet: false });
+  document.getElementById('do-rotate').innerHTML = `<div style="transform:rotate(18deg);opacity:0.5">${bird(48, 44, { outerWaves: false, feet: false })}</div>`;
+  document.getElementById('do-recolor').innerHTML = bird(48, 44, { outerWaves: false, feet: false, mono: true });
+  document.getElementById('do-shadow').innerHTML = `<div style="filter:drop-shadow(2px 3px 4px rgba(0,0,0,0.5));opacity:0.7">${bird(48, 44, { outerWaves: false, feet: false })}</div>`;
+
+  /* Colour palette */
+  document.getElementById('clr-grid').innerHTML = palette.map(c => `
+    <div class="clr-sw" onclick="copyVal('${c.hex}')">
+      <div class="clr-fill" style="background:${c.hex}"></div>
+      <div class="clr-info">
+        <div class="clr-name">${c.name} <span style="font-weight:400;color:var(--fg-muted)">· ${c.role}</span></div>
+        <div class="clr-val"><span>${c.hex}</span><button onclick="event.stopPropagation();copyVal('${c.hex}')">copy</button></div>
+      </div>
+    </div>`).join('');
+
+  /* Typography */
+  document.getElementById('type-specs').innerHTML = `
+    <div class="type-row"><div class="type-sample" style="font-family:var(--font-d);font-size:48px;font-weight:900;letter-spacing:-.04em;line-height:1">Chirpset</div><div class="type-meta"><div class="type-meta-n">Display / Hero</div><div class="type-meta-d">SF Pro Display · 900 · -0.04em</div></div></div>
+    <div class="type-row"><div class="type-sample" style="font-family:var(--font-d);font-size:28px;font-weight:700;letter-spacing:-.02em">Section Headlines</div><div class="type-meta"><div class="type-meta-n">Headline</div><div class="type-meta-d">SF Pro Display · 700 · -0.02em</div></div></div>
+    <div class="type-row"><div class="type-sample" style="font-family:var(--font-b);font-size:16px;font-weight:500">Body copy for descriptions and interface text</div><div class="type-meta"><div class="type-meta-n">Body</div><div class="type-meta-d">SF Pro Text · 500 · 16px</div></div></div>
+    <div class="type-row"><div class="type-sample" style="font-family:var(--font-m);font-size:13px;font-weight:400;color:var(--green)">/dev/cu.usbmodem14101 — VID:0x303A PID:0x0001</div><div class="type-meta"><div class="type-meta-n">Mono / Code</div><div class="type-meta-d">SF Mono · 400 · 13px</div></div></div>
+    <div class="type-row"><div class="type-sample" style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--green)">Label / Eyebrow Text</div><div class="type-meta"><div class="type-meta-n">Label</div><div class="type-meta-d">SF Pro Text · 600 · 11px · UC</div></div></div>
+  `;
+
+  /* App icon grid */
+  const sizes = [16, 32, 64, 128, 256, 512];
+  document.getElementById('icon-grid').innerHTML = sizes.map(px => `
+    <div class="icon-cell">${appIcon(px)}<div class="icon-cell-lbl">${px} × ${px}${px === 16 ? ' · Menu bar' : ''}</div></div>
+  `).join('');
+
+  /* Launch mockup */
+  document.getElementById('launch-mockup').innerHTML = `
+    <div style="margin-bottom:20px">${bird(80, 73)}</div>
+    <div class="launch-name">Chirpset</div>
+    <div class="launch-sub">Serial devices, sorted.</div>
+    <div class="launch-bar"><div class="launch-bar-fill"></div></div>
+  `;
+
+  /* Marketing cards */
+  document.getElementById('mkt-grid').innerHTML = `
+    <!-- Social card -->
+    <div class="mkt-card">
+      <div class="mkt-preview" style="background:var(--bg)">
+        <div style="display:flex;align-items:center;gap:20px;background:linear-gradient(135deg,oklch(14% .01 250),oklch(10% .005 250));border:.5px solid var(--border-lt);border-radius:12px;padding:32px 36px;max-width:460px">
+          ${bird(52, 48, { outerWaves: false, feet: false })}
+          <div>
+            <div style="font-family:var(--font-d);font-size:22px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px">Chirpset</div>
+            <div style="font-size:12px;color:var(--fg-muted);line-height:1.5">Serial enumeration, firmware flashing &amp; log monitoring — right from the macOS menu bar.</div>
+            <div style="margin-top:6px;font-size:10px;font-family:var(--font-m);color:var(--green)">chirpset.app</div>
+          </div>
+        </div>
+      </div>
+      <div class="mkt-body"><div class="mkt-title">Social card (Twitter / LinkedIn)</div><div class="mkt-desc">1200 × 628 px. Dark variant with mark + tagline + URL.</div><div class="mkt-meta">Export: PNG @2x · dark-bg only</div></div>
+    </div>
+
+    <!-- Product Hunt -->
+    <div class="mkt-card">
+      <div class="mkt-preview" style="background:linear-gradient(135deg,#1a1a22,#111118);padding:36px">
+        <div style="text-align:center;max-width:300px">
+          ${bird(64, 59, { glow: true })}
+          <div style="font-family:var(--font-d);font-size:26px;font-weight:800;letter-spacing:-.03em;margin-top:14px;margin-bottom:4px">Chirpset</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.5">Serial enumeration, firmware flashing &amp; log monitoring for ESP32, Pi Pico, Arduino &amp; more — right from the macOS menu bar.</div>
+          <div style="margin-top:10px;font-size:10px;font-weight:600;color:var(--green);font-family:var(--font-m)">chirpset.app</div>
+        </div>
+      </div>
+      <div class="mkt-body"><div class="mkt-title">Product Hunt launch</div><div class="mkt-desc">1270 × 760 px. Gallery card for PH listing. Centered mark, one-liner, URL.</div><div class="mkt-meta">Export: PNG @2x</div></div>
+    </div>
+
+    <!-- GitHub README -->
+    <div class="mkt-card">
+      <div class="mkt-preview" style="background:#0d1117;padding:28px">
+        <div style="width:100%;background:linear-gradient(90deg,oklch(14% .008 250),oklch(10% .005 250));border:.5px solid rgba(255,255,255,.06);border-radius:8px;padding:20px;display:flex;align-items:center;gap:14px">
+          ${bird(38, 35, { outerWaves: false, feet: false, traces: false })}
+          <div>
+            <div style="font-family:var(--font-d);font-size:15px;font-weight:800;letter-spacing:-.02em">chirpset</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.4);font-family:var(--font-m)">macOS menu bar serial device enumerator &amp; firmware writer</div>
+          </div>
+        </div>
+      </div>
+      <div class="mkt-body"><div class="mkt-title">GitHub README hero</div><div class="mkt-desc">1280 × auto. Full-width banner for the repo README.</div><div class="mkt-meta">Export: SVG + PNG @1x</div></div>
+    </div>
+
+    <!-- Email header -->
+    <div class="mkt-card">
+      <div class="mkt-preview" style="background:#000;padding:32px">
+        <div style="text-align:center;max-width:360px">
+          ${bird(44, 40, { outerWaves: false, feet: false })}
+          <div style="font-family:var(--font-d);font-size:18px;font-weight:800;letter-spacing:-.02em;margin-top:10px;margin-bottom:4px">Chirpset is here.</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.4);line-height:1.5">The menu bar tool every maker needs. Serial, flash, logs — all in one place.</div>
+          <div style="margin-top:12px;display:inline-block;background:#3FD97F;color:#000;font-size:11px;font-weight:700;padding:6px 18px;border-radius:5px">Download for macOS</div>
+        </div>
+      </div>
+      <div class="mkt-body"><div class="mkt-title">Launch email header</div><div class="mkt-desc">600 px wide email banner. Stacked mark + headline + CTA.</div><div class="mkt-meta">Export: PNG @2x · email-safe</div></div>
+    </div>
+  `;
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

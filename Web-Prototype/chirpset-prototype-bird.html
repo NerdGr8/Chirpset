@@ -1,0 +1,652 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chirpset — Prototype</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:oklch(13% 0.005 250);--bg-desktop:oklch(18% 0.008 260);
+  --surface:oklch(22% 0.006 250);--surface-raised:oklch(27% 0.006 250);--surface-hover:oklch(32% 0.006 250);
+  --fg:oklch(93% 0.005 250);--fg-secondary:oklch(72% 0.008 250);
+  --muted:oklch(52% 0.01 250);--border:oklch(35% 0.006 250);--border-light:oklch(28% 0.005 250);
+  --accent:oklch(72% 0.19 150);--accent-blue:oklch(62% 0.18 260);
+  --accent-amber:oklch(75% 0.16 85);--accent-red:oklch(62% 0.22 25);
+  --font-display:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif;
+  --font-body:-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif;
+  --font-mono:'SF Mono',Menlo,ui-monospace,monospace;
+  --radius:8px;--radius-lg:12px;
+}
+body{font-family:var(--font-body);background:var(--bg);color:var(--fg);overflow:hidden;height:100vh;width:100vw;user-select:none;-webkit-user-select:none}
+
+/* Desktop */
+.desktop{width:100%;height:100%;background:linear-gradient(160deg,oklch(16% 0.01 270) 0%,oklch(12% 0.008 250) 40%,oklch(14% 0.012 230) 100%);position:relative}
+
+/* Menu Bar */
+.menubar{position:fixed;top:0;left:0;right:0;height:25px;background:rgba(30,30,30,0.72);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);display:flex;align-items:center;justify-content:space-between;padding:0 10px;font-size:13px;font-weight:500;z-index:1000;border-bottom:0.5px solid rgba(255,255,255,0.08)}
+.menubar-left,.menubar-right{display:flex;align-items:center;gap:2px}
+.menubar-left span,.menubar-right span{padding:2px 10px;border-radius:4px;cursor:default;color:rgba(255,255,255,0.88);line-height:20px}
+.menubar-left span:first-child{font-size:15px;padding:2px 8px}
+.menubar-left .app-name{font-weight:700}
+.menubar-right span{font-size:12px;padding:2px 6px}
+.menubar-icon-btn{display:flex;align-items:center;justify-content:center;padding:2px 6px;border-radius:4px;cursor:pointer;transition:background 0.12s}
+.menubar-icon-btn:hover{background:rgba(255,255,255,0.1)}
+.menubar-icon-btn.active{background:rgba(255,255,255,0.14)}
+.menubar-icon-btn svg{display:block}
+.menubar-clock{font-variant-numeric:tabular-nums;letter-spacing:0.01em;color:rgba(255,255,255,0.88)!important}
+
+/* Bird icon animations */
+@keyframes chirp-beak{
+  0%,65%,100%{transform:translateY(0)}
+  70%,80%{transform:translateY(1.2px)}
+}
+@keyframes sound-pulse{
+  0%,65%,100%{opacity:0.15;transform:scale(1)}
+  72%,90%{opacity:0.6;transform:scale(1.05)}
+}
+@keyframes antenna-blink{
+  0%,85%,100%{opacity:0.95}
+  88%{opacity:0.25}
+}
+.bird-beak-lower{animation:chirp-beak 2.8s ease-in-out infinite;transform-origin:12px 6.5px}
+.bird-sound-wave{animation:sound-pulse 2.8s ease-in-out infinite}
+.bird-sound-wave-2{animation:sound-pulse 2.8s ease-in-out infinite 0.15s}
+.bird-antenna-tip{animation:antenna-blink 3.5s ease-in-out infinite}
+
+/* Panel */
+.chirpset-panel{position:fixed;top:30px;right:14px;width:352px;background:rgba(32,32,32,0.88);backdrop-filter:blur(40px) saturate(180%);-webkit-backdrop-filter:blur(40px) saturate(180%);border-radius:0 0 var(--radius-lg) var(--radius-lg);border:0.5px solid rgba(255,255,255,0.1);box-shadow:0 16px 48px rgba(0,0,0,0.45),0 0 0 0.5px rgba(0,0,0,0.3);z-index:999;overflow:hidden;display:flex;flex-direction:column;max-height:calc(100vh - 50px)}
+.chirpset-panel.hidden{display:none}
+.panel-header{display:flex;align-items:center;gap:8px;padding:10px 14px 8px;border-bottom:0.5px solid var(--border-light)}
+.panel-logo{flex-shrink:0}
+.panel-title{font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--fg);letter-spacing:-0.01em}
+.panel-header-right{margin-left:auto;display:flex;align-items:center}
+.scan-indicator{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--accent);font-weight:500}
+.scan-dot{width:6px;height:6px;background:var(--accent);border-radius:50%;animation:pulse-dot 2s ease-in-out infinite}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:0.3}}
+.panel-subtitle{font-size:11px;color:var(--muted);padding:6px 14px 4px}
+.panel-body{flex:1;overflow-y:auto;padding:4px 8px 8px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.12) transparent}
+.panel-body::-webkit-scrollbar{width:5px}
+.panel-body::-webkit-scrollbar-track{background:transparent}
+.panel-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:3px}
+.panel-empty{text-align:center;padding:32px 16px;color:var(--muted);font-size:12px}
+.panel-footer{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-top:0.5px solid var(--border-light)}
+.footer-btn{background:none;border:none;color:var(--muted);font-size:12px;font-family:var(--font-body);cursor:pointer;padding:4px 8px;border-radius:4px;display:flex;align-items:center;gap:4px;transition:background 0.12s,color 0.12s}
+.footer-btn:hover{background:rgba(255,255,255,0.06);color:var(--fg-secondary)}
+.footer-btn svg{opacity:0.6}
+.footer-version{font-size:10px;color:var(--muted);font-family:var(--font-mono);opacity:0.6}
+
+/* Device Cards */
+.device-card{border-radius:var(--radius);background:transparent;margin-bottom:2px;transition:background 0.12s}
+.device-card:hover{background:rgba(255,255,255,0.03)}
+.device-card.selected{background:rgba(255,255,255,0.05)}
+.card-summary{display:flex;align-items:center;gap:10px;padding:8px 10px;cursor:pointer}
+.device-icon{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--surface)}
+.device-icon svg{display:block}
+.device-info{flex:1;min-width:0}
+.device-name{font-size:12px;font-weight:600;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.device-port{font-size:10px;font-family:var(--font-mono);color:var(--muted);margin-top:1px}
+.device-port .volume{color:var(--accent-amber)}
+.status-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;white-space:nowrap;flex-shrink:0}
+.status-connected{background:oklch(72% 0.19 150 / 0.14);color:var(--accent)}
+.status-bootloader{background:oklch(75% 0.16 85 / 0.14);color:var(--accent-amber)}
+.status-flashing{background:oklch(62% 0.18 260 / 0.14);color:var(--accent-blue)}
+.status-error{background:oklch(62% 0.22 25 / 0.14);color:var(--accent-red)}
+
+.card-detail{padding:0 10px 10px;display:none}
+.device-card.expanded .card-detail{display:block}
+.detail-grid{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:11px;padding:8px 0;border-top:0.5px solid var(--border-light)}
+.detail-label{color:var(--muted);font-weight:500;white-space:nowrap}
+.detail-value{color:var(--fg-secondary);font-family:var(--font-mono);font-size:10.5px;text-align:right}
+.detail-divider{height:0.5px;background:var(--border-light);margin:4px 0}
+
+.flash-zone{margin-top:8px;padding:10px;border:1.5px dashed var(--border);border-radius:var(--radius);text-align:center;transition:border-color 0.2s,background 0.2s;cursor:pointer}
+.flash-zone:hover{border-color:var(--accent-blue);background:oklch(62% 0.18 260 / 0.06)}
+.flash-zone.dragover{border-color:var(--accent-blue);background:oklch(62% 0.18 260 / 0.1)}
+.flash-zone-title{font-size:11px;font-weight:600;color:var(--fg-secondary);margin-bottom:2px}
+.flash-zone-subtitle{font-size:10px;color:var(--muted)}
+.flash-btn{display:inline-flex;align-items:center;gap:4px;margin-top:8px;padding:5px 14px;background:var(--accent-blue);color:white;border:none;border-radius:5px;font-size:11px;font-weight:600;font-family:var(--font-body);cursor:pointer;transition:filter 0.12s}
+.flash-btn:hover{filter:brightness(1.15)}
+.flash-btn:active{filter:brightness(0.95)}
+
+.flash-progress{margin-top:8px;padding:8px 0 0;display:none}
+.flash-progress.active{display:block}
+.progress-bar-track{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.progress-bar-fill{height:100%;background:var(--accent-blue);border-radius:2px;transition:width 0.3s ease;width:0%}
+.progress-bar-fill.success{background:var(--accent)}
+.progress-bar-fill.error{background:var(--accent-red)}
+.progress-info{display:flex;justify-content:space-between;margin-top:4px;font-size:10px;font-family:var(--font-mono)}
+.progress-percent{color:var(--fg-secondary)}
+.progress-status{color:var(--muted);text-align:right;max-width:60%}
+.flash-cancel{margin-top:6px;background:none;border:0.5px solid var(--border);color:var(--muted);font-size:10px;font-family:var(--font-body);padding:3px 10px;border-radius:4px;cursor:pointer}
+.flash-cancel:hover{background:rgba(255,255,255,0.04);color:var(--fg-secondary)}
+
+.bootloader-instructions{margin-top:8px;padding:8px 10px;background:oklch(75% 0.16 85 / 0.08);border:0.5px solid oklch(75% 0.16 85 / 0.15);border-radius:var(--radius);font-size:10.5px;line-height:1.45;color:var(--fg-secondary)}
+.bootloader-instructions strong{color:var(--accent-amber);font-weight:600;display:block;margin-bottom:3px}
+.bootloader-instructions ol{padding-left:14px;margin:4px 0}
+.bootloader-instructions li{margin-bottom:2px}
+.bootloader-instructions code{font-family:var(--font-mono);font-size:10px;background:rgba(255,255,255,0.06);padding:1px 4px;border-radius:3px}
+.bootloader-waiting{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:10px;color:var(--accent-amber);font-weight:500}
+.bootloader-waiting .spinner{width:10px;height:10px;border:1.5px solid var(--accent-amber);border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.device-actions{display:flex;gap:6px;margin-top:8px}
+.action-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:6px 10px;background:var(--surface-raised);border:0.5px solid var(--border);color:var(--fg-secondary);font-size:11px;font-weight:500;font-family:var(--font-body);border-radius:5px;cursor:pointer;transition:background 0.12s,border-color 0.12s}
+.action-btn:hover{background:var(--surface-hover);border-color:var(--border)}
+.action-btn svg{flex-shrink:0}
+
+/* macOS Window */
+.macos-window{position:fixed;border-radius:10px;background:rgba(38,38,38,0.96);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:0.5px solid rgba(255,255,255,0.12);box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 0 0.5px rgba(0,0,0,0.4);z-index:998;display:none;flex-direction:column;overflow:hidden}
+.macos-window.visible{display:flex}
+.window-titlebar{display:flex;align-items:center;height:38px;padding:0 14px;background:rgba(48,48,48,0.6);border-bottom:0.5px solid rgba(255,255,255,0.06);cursor:default;flex-shrink:0}
+.traffic-lights{display:flex;gap:7px;align-items:center}
+.traffic-light{width:12px;height:12px;border-radius:50%;cursor:pointer;transition:filter 0.12s}
+.traffic-light:hover{filter:brightness(1.2)}
+.tl-close{background:#FF5F57}
+.tl-minimize{background:#FEBC2E}
+.tl-zoom{background:#28C840}
+.window-title{position:absolute;left:50%;transform:translateX(-50%);font-size:12px;font-weight:600;color:var(--fg-secondary);white-space:nowrap}
+
+/* Serial Console */
+.serial-window{top:80px;left:calc(50% - 300px);width:600px;height:460px}
+.serial-toolbar{display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:0.5px solid var(--border-light);flex-shrink:0}
+.serial-toolbar-label{font-size:10px;color:var(--muted);font-weight:500}
+.serial-baud-select{background:var(--surface-raised);border:0.5px solid var(--border);color:var(--fg-secondary);font-size:10.5px;font-family:var(--font-mono);padding:3px 6px;border-radius:4px;cursor:pointer;outline:none}
+.serial-baud-select:focus{border-color:var(--accent-blue)}
+.serial-baud-select option{background:var(--surface)}
+.serial-controls{display:flex;gap:4px;margin-left:auto}
+.serial-ctrl-btn{background:none;border:0.5px solid var(--border);color:var(--muted);font-size:10px;font-family:var(--font-body);padding:3px 8px;border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:3px;transition:background 0.12s,color 0.12s}
+.serial-ctrl-btn:hover{background:rgba(255,255,255,0.04);color:var(--fg-secondary)}
+.serial-ctrl-btn.active{color:var(--accent);border-color:var(--accent);background:oklch(72% 0.19 150 / 0.08)}
+.serial-connected-dot{width:5px;height:5px;background:var(--accent);border-radius:50%;margin-right:6px}
+.serial-status{font-size:10px;color:var(--muted);font-family:var(--font-mono);margin-left:8px}
+.serial-output{flex:1;background:oklch(10% 0.005 250);padding:8px 12px;overflow-y:auto;font-family:var(--font-mono);font-size:11px;line-height:1.55;color:oklch(78% 0.01 140);scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.1) transparent}
+.serial-output::-webkit-scrollbar{width:5px}
+.serial-output::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
+.serial-line{white-space:pre-wrap;word-break:break-all}
+.serial-line .timestamp{color:var(--muted);margin-right:6px;font-size:10px}
+.serial-line .warn{color:var(--accent-amber)}
+.serial-line .error{color:var(--accent-red)}
+.serial-line .info{color:oklch(70% 0.14 200)}
+.serial-input-bar{display:flex;align-items:center;border-top:0.5px solid var(--border-light);padding:6px 12px;flex-shrink:0}
+.serial-input{flex:1;background:var(--surface);border:0.5px solid var(--border);color:var(--fg);font-family:var(--font-mono);font-size:11px;padding:5px 8px;border-radius:4px;outline:none}
+.serial-input:focus{border-color:var(--accent-blue)}
+.serial-input::placeholder{color:var(--muted)}
+.serial-send-btn{margin-left:6px;background:var(--accent-blue);border:none;color:white;font-size:10px;font-weight:600;font-family:var(--font-body);padding:5px 12px;border-radius:4px;cursor:pointer}
+.serial-send-btn:hover{filter:brightness(1.15)}
+
+/* Settings Window */
+.settings-window{top:100px;left:calc(50% - 280px);width:560px;height:420px}
+.settings-body{display:flex;flex:1;overflow:hidden}
+.settings-sidebar{width:140px;background:rgba(32,32,32,0.5);border-right:0.5px solid var(--border-light);padding:8px 6px;flex-shrink:0}
+.settings-nav-item{display:flex;align-items:center;gap:6px;padding:5px 8px;font-size:12px;color:var(--fg-secondary);border-radius:5px;cursor:pointer;transition:background 0.1s;margin-bottom:1px}
+.settings-nav-item:hover{background:rgba(255,255,255,0.04)}
+.settings-nav-item.active{background:rgba(255,255,255,0.07);color:var(--fg)}
+.settings-nav-item svg{flex-shrink:0;opacity:0.6}
+.settings-content{flex:1;padding:16px 20px;overflow-y:auto}
+.settings-section-title{font-size:12px;font-weight:700;color:var(--fg);margin-bottom:12px;letter-spacing:-0.01em}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--border-light)}
+.setting-row:last-child{border-bottom:none}
+.setting-label{font-size:12px;color:var(--fg-secondary)}
+.setting-desc{font-size:10px;color:var(--muted);margin-top:1px}
+.toggle{position:relative;width:34px;height:18px;background:var(--border);border-radius:9px;cursor:pointer;transition:background 0.2s;flex-shrink:0}
+.toggle.on{background:var(--accent)}
+.toggle-knob{position:absolute;top:2px;left:2px;width:14px;height:14px;background:white;border-radius:50%;transition:transform 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3)}
+.toggle.on .toggle-knob{transform:translateX(16px)}
+.settings-select{background:var(--surface-raised);border:0.5px solid var(--border);color:var(--fg-secondary);font-size:11px;font-family:var(--font-body);padding:3px 8px;border-radius:4px;cursor:pointer;outline:none}
+.tool-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--border-light)}
+.tool-name{font-size:11px;font-family:var(--font-mono);color:var(--fg-secondary)}
+.tool-version{font-size:10px;color:var(--muted);font-family:var(--font-mono)}
+.tool-status{font-size:10px;color:var(--accent)}
+
+/* Notifications */
+.notification-container{position:fixed;top:32px;right:16px;z-index:1100;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.notification{background:rgba(44,44,44,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:0.5px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;min-width:280px;max-width:340px;box-shadow:0 8px 30px rgba(0,0,0,0.4);animation:notif-in 0.3s ease-out;pointer-events:auto;display:flex;gap:10px;align-items:flex-start}
+.notification.exiting{animation:notif-out 0.25s ease-in forwards}
+@keyframes notif-in{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes notif-out{to{transform:translateX(100px);opacity:0}}
+.notif-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.notif-icon svg{display:block}
+.notif-icon.connect{background:oklch(72% 0.19 150 / 0.15)}
+.notif-icon.disconnect{background:oklch(62% 0.22 25 / 0.15)}
+.notif-icon.bootloader{background:oklch(75% 0.16 85 / 0.15)}
+.notif-icon.flash-success{background:oklch(72% 0.19 150 / 0.15)}
+.notif-title{font-size:12px;font-weight:600;color:var(--fg);margin-bottom:1px}
+.notif-text{font-size:11px;color:var(--muted);line-height:1.35}
+
+/* Empty State */
+.empty-state{text-align:center;padding:40px 20px}
+.empty-state-bird{margin:0 auto 14px;opacity:0.35;animation:float-bird 4s ease-in-out infinite}
+@keyframes float-bird{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.empty-state-title{font-size:13px;font-weight:600;color:var(--fg-secondary);margin-bottom:4px}
+.empty-state-text{font-size:11px;color:var(--muted);line-height:1.4}
+</style>
+</head>
+<body>
+<div class="desktop">
+
+  <!-- Menu Bar -->
+  <div class="menubar">
+    <div class="menubar-left">
+      <span style="font-size:16px">&#63743;</span>
+      <span class="app-name">Finder</span>
+      <span>File</span><span>Edit</span><span>View</span><span>Go</span><span>Window</span><span>Help</span>
+    </div>
+    <div class="menubar-right">
+      <span class="menubar-icon-btn" title="Battery"><svg width="20" height="11" viewBox="0 0 20 11" fill="none"><rect x=".5" y=".5" width="16" height="10" rx="2" stroke="rgba(255,255,255,0.55)"/><rect x="2" y="2" width="11" height="7" rx="1" fill="rgba(255,255,255,0.55)"/><path d="M18 4v3a1.5 1.5 0 000-3z" fill="rgba(255,255,255,0.35)"/></svg></span>
+      <span class="menubar-icon-btn" title="WiFi"><svg width="14" height="11" viewBox="0 0 14 11" fill="rgba(255,255,255,0.6)"><path d="M7 9.5a1 1 0 110 2 1 1 0 010-2zM3.76 7.24a4.5 4.5 0 016.48 0l-.94.94a3.2 3.2 0 00-4.6 0l-.94-.94zM1.34 4.82a7.9 7.9 0 0111.32 0l-.94.94a6.6 6.6 0 00-9.44 0l-.94-.94z"/></svg></span>
+
+      <!-- CHIRPSET BIRD ICON -->
+      <span class="menubar-icon-btn" id="chirpset-menu-icon" title="Chirpset" onclick="togglePanel()">
+        <svg width="20" height="18" viewBox="0 0 20 18" fill="none">
+          <!-- Tail feathers -->
+          <path d="M2 9 L0 6.5 L1.5 8.2 L0.2 5 L2 7.8" fill="rgba(255,255,255,0.45)"/>
+          <!-- Body — rounded robotic shell -->
+          <path d="M3 11 C3 7.5 4.5 5 7.5 4.5 L10.5 4.5 C13 4.5 14 6.2 14 8.5 L14 10.5 C14 12.2 12.5 13.2 10 13.2 L6 13.2 C4 13.2 3 12 3 11Z" fill="rgba(255,255,255,0.88)"/>
+          <!-- Antenna stem -->
+          <line x1="9" y1="4.5" x2="9.5" y2="1.8" stroke="rgba(255,255,255,0.75)" stroke-width="0.9"/>
+          <!-- Antenna tip (blinking LED) -->
+          <circle class="bird-antenna-tip" cx="9.5" cy="1.5" r="1" fill="oklch(72% 0.19 150)"/>
+          <!-- Circuit traces on body -->
+          <line x1="4.5" y1="7.8" x2="7" y2="7.8" stroke="rgba(80,80,80,0.4)" stroke-width="0.55"/>
+          <circle cx="7" cy="7.8" r="0.4" fill="rgba(80,80,80,0.4)"/>
+          <line x1="4.5" y1="9.3" x2="8" y2="9.3" stroke="rgba(80,80,80,0.4)" stroke-width="0.55"/>
+          <circle cx="8" cy="9.3" r="0.4" fill="rgba(80,80,80,0.4)"/>
+          <line x1="4.5" y1="10.8" x2="6.2" y2="10.8" stroke="rgba(80,80,80,0.4)" stroke-width="0.55"/>
+          <!-- Eye socket -->
+          <circle cx="11" cy="7" r="2" fill="#1a1a1a"/>
+          <!-- Eye highlight -->
+          <circle cx="11.5" cy="6.5" r="0.7" fill="rgba(255,255,255,0.85)"/>
+          <!-- Upper beak -->
+          <path d="M14 6 L17.5 4.8 L17 7 Z" fill="#E8A838"/>
+          <!-- Lower beak (animated chirp) -->
+          <g class="bird-beak-lower">
+            <path d="M14 8 L17 9 L17 7 Z" fill="#D49030"/>
+          </g>
+          <!-- Sound wave 1 -->
+          <path class="bird-sound-wave" d="M17.5 5 C18.8 7 18.8 8.5 17.5 9.5" stroke="rgba(255,255,255,0.5)" stroke-width="0.6" fill="none"/>
+          <!-- Sound wave 2 -->
+          <path class="bird-sound-wave-2" d="M18.5 4.2 C20 6.5 20 8.5 18.5 10.2" stroke="rgba(255,255,255,0.25)" stroke-width="0.5" fill="none"/>
+          <!-- Feet -->
+          <line x1="6.5" y1="13.2" x2="6" y2="15.8" stroke="rgba(255,255,255,0.45)" stroke-width="0.7"/>
+          <line x1="9" y1="13.2" x2="9.5" y2="15.8" stroke="rgba(255,255,255,0.45)" stroke-width="0.7"/>
+          <line x1="5" y1="15.8" x2="7" y2="15.8" stroke="rgba(255,255,255,0.35)" stroke-width="0.6"/>
+          <line x1="8.5" y1="15.8" x2="10.5" y2="15.8" stroke="rgba(255,255,255,0.35)" stroke-width="0.6"/>
+        </svg>
+      </span>
+
+      <span class="menubar-clock" id="menu-clock"></span>
+    </div>
+  </div>
+
+  <!-- Chirpset Panel -->
+  <div class="chirpset-panel" id="chirpset-panel">
+    <div class="panel-header">
+      <span class="panel-logo">
+        <svg width="22" height="20" viewBox="0 0 22 20" fill="none">
+          <path d="M3.5 12.5 C3.5 8.5 5.2 6 8.2 5.5 L11.5 5.5 C14 5.5 15.2 7 15.2 9.5 L15.2 12 C15.2 13.5 13.8 14.5 11 14.5 L7 14.5 C5 14.5 3.5 13.5 3.5 12.5Z" fill="var(--accent-amber)" opacity="0.85"/>
+          <line x1="10" y1="5.5" x2="10.5" y2="2" stroke="var(--accent-amber)" stroke-width="0.9" opacity="0.7"/>
+          <circle cx="10.5" cy="1.7" r="1.1" fill="var(--accent)" opacity="0.8"/>
+          <circle cx="12" cy="8" r="2.2" fill="#1a1a1a"/>
+          <circle cx="12.5" cy="7.4" r="0.7" fill="rgba(255,255,255,0.8)"/>
+          <path d="M15.2 7 L18.5 5.5 L18 8 Z" fill="#E8A838"/>
+          <path d="M15.2 9.5 L18 10.5 L18 8 Z" fill="#D49030"/>
+          <path d="M18.5 5.8 C19.8 7.5 19.8 9 18.5 10.2" stroke="var(--accent-amber)" stroke-width="0.6" fill="none" opacity="0.4"/>
+          <line x1="5" y1="8.8" x2="7.8" y2="8.8" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>
+          <line x1="5" y1="10.5" x2="8.5" y2="10.5" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>
+        </svg>
+      </span>
+      <span class="panel-title">Chirpset</span>
+      <span class="panel-header-right">
+        <span class="scan-indicator"><span class="scan-dot"></span>Scanning</span>
+      </span>
+    </div>
+    <div class="panel-subtitle" id="panel-subtitle">3 devices connected</div>
+    <div class="panel-body" id="panel-body"></div>
+    <div class="panel-footer">
+      <button class="footer-btn" onclick="openSettings()">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="2.5"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4"/></svg>
+        Settings
+      </button>
+      <span class="footer-version">v0.1.0</span>
+    </div>
+  </div>
+
+  <!-- Serial Console Window -->
+  <div class="macos-window serial-window" id="serial-window">
+    <div class="window-titlebar">
+      <div class="traffic-lights">
+        <div class="traffic-light tl-close" onclick="closeSerial()"></div>
+        <div class="traffic-light tl-minimize"></div>
+        <div class="traffic-light tl-zoom"></div>
+      </div>
+      <span class="window-title" id="serial-window-title">Serial Monitor</span>
+    </div>
+    <div class="serial-toolbar">
+      <span class="serial-connected-dot" id="serial-dot"></span>
+      <span class="serial-toolbar-label">Baud</span>
+      <select class="serial-baud-select" id="baud-select">
+        <option value="9600">9600</option><option value="19200">19200</option><option value="38400">38400</option><option value="57600">57600</option><option value="115200" selected>115200</option><option value="230400">230400</option><option value="460800">460800</option><option value="921600">921600</option>
+      </select>
+      <span class="serial-status" id="serial-status-line">/dev/cu.usbmodem14101</span>
+      <div class="serial-controls">
+        <button class="serial-ctrl-btn" id="btn-timestamp" onclick="toggleTimestamps()"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="6" cy="6" r="4.5"/><path d="M6 3.5V6l2 1"/></svg>TS</button>
+        <button class="serial-ctrl-btn" id="btn-pause" onclick="togglePause()"><svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor"><rect x="1" y="1" width="3" height="8" rx="0.5"/><rect x="6" y="1" width="3" height="8" rx="0.5"/></svg>Pause</button>
+        <button class="serial-ctrl-btn" onclick="clearSerial()"><svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M2 4h8M5 2l-3 2 3 2"/><path d="M3 7v3h6V7"/></svg>Clear</button>
+      </div>
+    </div>
+    <div class="serial-output" id="serial-output"></div>
+    <div class="serial-input-bar">
+      <input class="serial-input" id="serial-input" placeholder="Send to device…" onkeydown="if(event.key==='Enter')sendSerial()">
+      <button class="serial-send-btn" onclick="sendSerial()">Send</button>
+    </div>
+  </div>
+
+  <!-- Settings Window -->
+  <div class="macos-window settings-window" id="settings-window">
+    <div class="window-titlebar">
+      <div class="traffic-lights">
+        <div class="traffic-light tl-close" onclick="closeSettings()"></div>
+        <div class="traffic-light tl-minimize"></div>
+        <div class="traffic-light tl-zoom"></div>
+      </div>
+      <span class="window-title">Chirpset Settings</span>
+    </div>
+    <div class="settings-body">
+      <div class="settings-sidebar">
+        <div class="settings-nav-item active" onclick="showSettingsTab('general',this)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="2.5"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4"/></svg>General</div>
+        <div class="settings-nav-item" onclick="showSettingsTab('notifications',this)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M8 1.5a4.5 4.5 0 014.5 4.5v3l1.5 2H3l1.5-2V6A4.5 4.5 0 018 1.5zM6.5 13h3"/></svg>Notifications</div>
+        <div class="settings-nav-item" onclick="showSettingsTab('tools',this)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M5.5 2L14 10.5 11.5 13 3 4.5z"/><path d="M2 12.5L5.5 9"/></svg>Tools</div>
+      </div>
+      <div class="settings-content" id="settings-content"></div>
+    </div>
+  </div>
+
+  <div class="notification-container" id="notification-container"></div>
+</div>
+
+<script>
+// ─── Device Data ──────────────────────────
+const devices=[
+  {id:'esp32s3-1',name:'ESP32-S3-DevKitC-1',manufacturer:'Espressif Systems',vid:'0x303A',pid:'0x0001',serial:'7C:DF:A1:E2:B3:C4',port:'/dev/cu.usbmodem14101',boardFamily:'ESP32-S3',status:'connected',flashBackend:'Serial (esptool)',chip:'ESP32-S3 (revision v0.1)',autoFlash:true,flashable:true,icon:'esp'},
+  {id:'pico-1',name:'Raspberry Pi Pico',manufacturer:'Raspberry Pi Foundation',vid:'0x2E8A',pid:'0x000A',serial:'E660C48213782A36',port:null,volumePath:'/Volumes/RPI-RP2',boardFamily:'RP2040',status:'bootloader',flashBackend:'Mass-storage (UF2)',chip:'RP2040',autoFlash:false,flashable:true,bootloaderNote:'Board detected in BOOTSEL mode — ready to flash',icon:'pico'},
+  {id:'arduino-uno-1',name:'Arduino Uno Rev3',manufacturer:'Arduino S.r.l.',vid:'0x2341',pid:'0x0043',serial:'856323139373518011C1',port:'/dev/cu.usbmodem14201',boardFamily:'AVR (ATmega328P)',status:'connected',flashBackend:'Serial (avrdude)',chip:'ATmega328P',autoFlash:true,flashable:true,icon:'avr'},
+  {id:'stm32-1',name:'STM32F103C8T6 "Blue Pill"',manufacturer:'STMicroelectronics',vid:'0x0483',pid:'0x3748',serial:'STM32-003A002D',port:'/dev/cu.usbserial-1410',boardFamily:'STM32F1',status:'connected',flashBackend:'Serial (stm32flash)',chip:'STM32F103C8T6',autoFlash:false,flashable:false,bootloaderInstructions:['Set the BOOT0 jumper to position 1 (ensure BOOT1 is at 0)','Press the RESET button on the board','Wait for the device to re-enumerate in DFU/bootloader mode'],icon:'stm'}
+];
+
+// ─── State ────────────────────────────────
+let state={panelOpen:true,selectedDevice:null,flashState:null,serialOpen:false,serialDeviceId:null,serialPaused:false,serialTimestamps:false,settingsOpen:false,settingsTab:'general',settings:{launchAtLogin:true,showNotifications:true,notificationLevel:'all',showBootloaderNotifications:true,autoReconnect:true}};
+let serialIntervalId=null,flashIntervalId=null;
+let connectedDeviceIds=new Set(['esp32s3-1','pico-1','arduino-uno-1']);
+
+// ─── Helpers ──────────────────────────────
+function getDeviceIconSvg(t){
+  const svgs={esp:'<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="3" width="12" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><rect x="5.5" y="5.5" width="7" height="7" rx="0.8" fill="currentColor" opacity="0.3"/><line x1="6" y1="3" x2="6" y2="0.5" stroke="currentColor" stroke-width="1"/><line x1="9" y1="3" x2="9" y2="0.5" stroke="currentColor" stroke-width="1"/><line x1="12" y1="3" x2="12" y2="0.5" stroke="currentColor" stroke-width="1"/><line x1="6" y1="15" x2="6" y2="17.5" stroke="currentColor" stroke-width="1"/><line x1="9" y1="15" x2="9" y2="17.5" stroke="currentColor" stroke-width="1"/><line x1="12" y1="15" x2="12" y2="17.5" stroke="currentColor" stroke-width="1"/><line x1="3" y1="6" x2="0.5" y2="6" stroke="currentColor" stroke-width="1"/><line x1="3" y1="9" x2="0.5" y2="9" stroke="currentColor" stroke-width="1"/><line x1="3" y1="12" x2="0.5" y2="12" stroke="currentColor" stroke-width="1"/><line x1="15" y1="6" x2="17.5" y2="6" stroke="currentColor" stroke-width="1"/><line x1="15" y1="9" x2="17.5" y2="9" stroke="currentColor" stroke-width="1"/><line x1="15" y1="12" x2="17.5" y2="12" stroke="currentColor" stroke-width="1"/></svg>',pico:'<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="5" width="14" height="8" rx="1.2" stroke="currentColor" stroke-width="1.1"/><circle cx="5.5" cy="9" r="1.5" fill="currentColor" opacity="0.3"/><rect x="9" y="6.5" width="5" height="5" rx="0.6" stroke="currentColor" stroke-width="0.8" opacity="0.4"/><line x1="4" y1="5" x2="4" y2="2.5" stroke="currentColor" stroke-width="0.8"/><line x1="6" y1="5" x2="6" y2="2.5" stroke="currentColor" stroke-width="0.8"/><line x1="8" y1="5" x2="8" y2="2.5" stroke="currentColor" stroke-width="0.8"/><line x1="10" y1="5" x2="10" y2="2.5" stroke="currentColor" stroke-width="0.8"/><line x1="12" y1="5" x2="12" y2="2.5" stroke="currentColor" stroke-width="0.8"/><line x1="14" y1="5" x2="14" y2="2.5" stroke="currentColor" stroke-width="0.8"/><line x1="4" y1="13" x2="4" y2="15.5" stroke="currentColor" stroke-width="0.8"/><line x1="6" y1="13" x2="6" y2="15.5" stroke="currentColor" stroke-width="0.8"/><line x1="8" y1="13" x2="8" y2="15.5" stroke="currentColor" stroke-width="0.8"/><line x1="10" y1="13" x2="10" y2="15.5" stroke="currentColor" stroke-width="0.8"/><line x1="12" y1="13" x2="12" y2="15.5" stroke="currentColor" stroke-width="0.8"/><line x1="14" y1="13" x2="14" y2="15.5" stroke="currentColor" stroke-width="0.8"/></svg>',avr:'<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="3" width="12" height="12" rx="1.2" stroke="currentColor" stroke-width="1.1"/><rect x="5" y="5" width="4" height="3" rx="0.5" fill="currentColor" opacity="0.25"/><line x1="3" y1="7" x2="0.5" y2="7" stroke="currentColor" stroke-width="0.9"/><line x1="3" y1="11" x2="0.5" y2="11" stroke="currentColor" stroke-width="0.9"/><line x1="15" y1="7" x2="17.5" y2="7" stroke="currentColor" stroke-width="0.9"/><line x1="15" y1="11" x2="17.5" y2="11" stroke="currentColor" stroke-width="0.9"/><circle cx="12.5" cy="6.5" r="0.7" fill="currentColor" opacity="0.3"/></svg>',stm:'<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="4" width="12" height="10" rx="1.2" stroke="currentColor" stroke-width="1.1"/><line x1="5" y1="4" x2="5" y2="1" stroke="currentColor" stroke-width="0.9"/><line x1="9" y1="4" x2="9" y2="1" stroke="currentColor" stroke-width="0.9"/><line x1="13" y1="4" x2="13" y2="1" stroke="currentColor" stroke-width="0.9"/><line x1="5" y1="14" x2="5" y2="17" stroke="currentColor" stroke-width="0.9"/><line x1="9" y1="14" x2="9" y2="17" stroke="currentColor" stroke-width="0.9"/><line x1="13" y1="14" x2="13" y2="17" stroke="currentColor" stroke-width="0.9"/><rect x="6" y="6" width="6" height="6" rx="0.5" stroke="currentColor" stroke-width="0.7" opacity="0.3"/></svg>'};
+  return svgs[t]||svgs.esp;
+}
+function getDeviceIconBg(t){
+  const bgs={esp:'background:oklch(72% 0.19 150 / 0.12);color:oklch(72% 0.19 150);',pico:'background:oklch(75% 0.16 85 / 0.12);color:oklch(75% 0.16 85);',avr:'background:oklch(62% 0.18 260 / 0.12);color:oklch(62% 0.18 260);',stm:'background:oklch(72% 0.12 300 / 0.12);color:oklch(72% 0.12 300);'};
+  return bgs[t]||bgs.esp;
+}
+function statusBadge(s){const m={connected:['Connected','status-connected'],bootloader:['Bootloader','status-bootloader'],flashing:['Flashing…','status-flashing'],error:['Error','status-error'],disconnected:['Offline','status-error']};const[l,c]=m[s]||['Unknown',''];return`<span class="status-badge ${c}">${l}</span>`;}
+
+// ─── Clock ────────────────────────────────
+function updateClock(){const n=new Date();const h=n.getHours();const m=String(n.getMinutes()).padStart(2,'0');const p=h>=12?'PM':'AM';const h12=h%12||12;document.getElementById('menu-clock').textContent=`${n.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}  ${h12}:${m} ${p}`;}
+
+// ─── Panel ────────────────────────────────
+function togglePanel(){state.panelOpen=!state.panelOpen;document.getElementById('chirpset-panel').classList.toggle('hidden',!state.panelOpen);document.getElementById('chirpset-menu-icon').classList.toggle('active',state.panelOpen);}
+
+function renderDevices(){
+  const body=document.getElementById('panel-body');
+  const connected=devices.filter(d=>connectedDeviceIds.has(d.id));
+  document.getElementById('panel-subtitle').textContent=`${connected.length} device${connected.length!==1?'s':''} connected`;
+  if(connected.length===0){
+    body.innerHTML=`<div class="empty-state">
+      <div class="empty-state-bird">
+        <svg width="64" height="58" viewBox="0 0 64 58" fill="none">
+          <path d="M10 35 C10 24 15 17 24 16 L34 16 C42 16 46 21 46 29 L46 34 C46 40 41 43 34 43 L20 43 C14 43 10 39 10 35Z" fill="rgba(255,255,255,0.5)"/>
+          <line x1="29" y1="16" x2="30" y2="5" stroke="rgba(255,255,255,0.4)" stroke-width="1.2"/>
+          <circle cx="30" cy="4" r="2.5" fill="oklch(72% 0.19 150)" opacity="0.6"/>
+          <circle cx="36" cy="22" r="5.5" fill="#1a1a1a" opacity="0.5"/>
+          <circle cx="37.5" cy="20.5" r="2" fill="rgba(255,255,255,0.5)"/>
+          <path d="M46 20 L58 15 L56 23 Z" fill="#E8A838" opacity="0.5"/>
+          <path d="M46 27 L56 31 L56 23 Z" fill="#D49030" opacity="0.5"/>
+          <path d="M58 16 C62 22 62 28 58 32" stroke="rgba(255,255,255,0.25)" stroke-width="1" fill="none"/>
+          <line x1="15" y1="26" x2="24" y2="26" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"/>
+          <line x1="15" y1="31" x2="27" y2="31" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"/>
+          <line x1="15" y1="36" x2="21" y2="36" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"/>
+          <path d="M10 30 L5 22 L7 26 L3 19 L6 25" fill="rgba(255,255,255,0.2)"/>
+          <line x1="21" y1="43" x2="19" y2="52" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+          <line x1="30" y1="43" x2="32" y2="52" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="empty-state-title">No devices detected</div>
+      <div class="empty-state-text">Plug in a serial device and it will appear here automatically.</div>
+    </div>`;
+    return;
+  }
+  body.innerHTML=connected.map(d=>{
+    const isExpanded=state.selectedDevice===d.id;
+    const isFlashing=state.flashState&&state.flashState.deviceId===d.id;
+    return`<div class="device-card ${isExpanded?'expanded selected':''}" data-device="${d.id}">
+      <div class="card-summary" onclick="selectDevice('${d.id}')">
+        <div class="device-icon" style="${getDeviceIconBg(d.icon)}">${getDeviceIconSvg(d.icon)}</div>
+        <div class="device-info">
+          <div class="device-name">${d.name}</div>
+          <div class="device-port">${d.port?d.port:'<span class="volume">'+d.volumePath+'</span>'}</div>
+        </div>
+        ${statusBadge(isFlashing?'flashing':d.status)}
+      </div>
+      <div class="card-detail">
+        <div class="detail-grid">
+          <span class="detail-label">Manufacturer</span><span class="detail-value">${d.manufacturer}</span>
+          <span class="detail-label">Chip</span><span class="detail-value">${d.chip}</span>
+          <span class="detail-label">VID:PID</span><span class="detail-value">${d.vid}:${d.pid}</span>
+          <span class="detail-label">Serial</span><span class="detail-value">${d.serial}</span>
+          <span class="detail-label">Backend</span><span class="detail-value">${d.flashBackend}</span>
+        </div>
+        ${d.status==='bootloader'&&d.bootloaderNote?`<div style="margin-top:6px;font-size:10px;color:var(--accent-amber);font-weight:500;padding:4px 0;">${d.bootloaderNote}</div>`:''}
+        ${!d.autoFlash&&d.bootloaderInstructions?`
+          <div class="detail-divider"></div>
+          <div class="bootloader-instructions">
+            <strong>Manual bootloader entry required</strong>
+            <ol>${d.bootloaderInstructions.map(s=>'<li>'+s+'</li>').join('')}</ol>
+            ${d.status!=='bootloader'?'<div class="bootloader-waiting"><span class="spinner"></span>Waiting for bootloader mode…</div>':''}
+          </div>`:''}
+        <div class="detail-divider"></div>
+        ${d.flashable||d.status==='bootloader'?renderFlashUI(d):''}
+        <div class="device-actions">
+          ${d.port?`<button class="action-btn" onclick="openSerial('${d.id}')"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="2" width="12" height="10" rx="1.5"/><path d="M4 5h6M4 7.5h4"/></svg>Serial Monitor</button>`:''}
+          <button class="action-btn" onclick="disconnectDevice('${d.id}')"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M4 1v3H1v6h3v3l4-4M9 5l4-4M13 1L9 5M10 8h3"/></svg>Disconnect</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderFlashUI(d){
+  const isFlashing=state.flashState&&state.flashState.deviceId===d.id;
+  if(isFlashing){
+    const fs=state.flashState;
+    return`<div class="flash-progress active">
+      <div class="progress-bar-track"><div class="progress-bar-fill ${fs.phase==='done'?'success':''} ${fs.phase==='error'?'error':''}" style="width:${fs.progress}%"></div></div>
+      <div class="progress-info">
+        <span class="progress-percent">${fs.phase==='done'?'Complete':fs.phase==='error'?'Failed':Math.round(fs.progress)+'%'}</span>
+        <span class="progress-status">${fs.statusText}</span>
+      </div>
+      ${fs.phase==='running'?'<button class="flash-cancel" onclick="cancelFlash()">Cancel</button>':''}
+      ${fs.phase==='done'?'<div style="margin-top:4px;font-size:10px;color:var(--accent);">Firmware flashed successfully — device rebooting</div>':''}
+    </div>`;
+  }
+  return`<div class="flash-zone" id="flash-zone-${d.id}" onclick="startFlash('${d.id}')" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="event.preventDefault();this.classList.remove('dragover');startFlash('${d.id}')">
+    <div class="flash-zone-title">${d.flashBackend.includes('Mass')?'Drop .uf2 file here':'Drop firmware file here'}</div>
+    <div class="flash-zone-subtitle">or click to select</div>
+  </div>`;
+}
+
+// ─── Device Selection ─────────────────────
+function selectDevice(id){state.selectedDevice=state.selectedDevice===id?null:id;renderDevices();}
+
+// ─── Flash Workflow ───────────────────────
+const flashSequences={
+  'esp32s3-1':[{progress:0,text:'esptool.py v4.7.0'},{progress:3,text:'Serial port: /dev/cu.usbmodem14101'},{progress:8,text:'Connecting…'},{progress:14,text:'Chip is ESP32-S3 (revision v0.1)'},{progress:18,text:'Crystal is 40MHz, MAC: 7c:df:a1:e2:b3:c4'},{progress:22,text:'Uploading stub…'},{progress:28,text:'Stub running…'},{progress:32,text:'Configuring flash size…'},{progress:38,text:'Compressed 1838000 bytes to 982344'},{progress:48,text:'Writing at 0x00040000… (25%)'},{progress:60,text:'Writing at 0x00080000… (50%)'},{progress:72,text:'Writing at 0x000c0000… (75%)'},{progress:85,text:'Writing at 0x00100000… (95%)'},{progress:94,text:'Wrote 1838000 bytes in 8.4s'},{progress:98,text:'Hash of data verified.'}],
+  'pico-1':[{progress:5,text:'Detected RPI-RP2 volume'},{progress:15,text:'Copying firmware.uf2 → /Volumes/RPI-RP2'},{progress:40,text:'Writing… 40%'},{progress:65,text:'Writing… 65%'},{progress:85,text:'Writing… 88%'},{progress:96,text:'Finalizing write…'}],
+  'arduino-uno-1':[{progress:0,text:'avrdude v7.3'},{progress:8,text:'Port: /dev/cu.usbmodem14201'},{progress:15,text:'Part: ATmega328P'},{progress:22,text:'Programmer: arduino'},{progress:30,text:'Entering programming mode…'},{progress:40,text:'Writing flash (28672 bytes)…'},{progress:58,text:'Writing | #################### | 100%'},{progress:70,text:'Reading | #################### | 100%'},{progress:85,text:'Verifying…'},{progress:94,text:'Verification complete.'}]
+};
+
+function startFlash(deviceId){
+  if(state.flashState)return;
+  const device=devices.find(d=>d.id===deviceId);
+  const seq=flashSequences[deviceId]||flashSequences['esp32s3-1'];
+  state.flashState={deviceId,progress:0,statusText:'Preparing…',phase:'running'};
+  renderDevices();
+  let step=0;
+  flashIntervalId=setInterval(()=>{
+    if(step<seq.length){state.flashState.progress=seq[step].progress;state.flashState.statusText=seq[step].text;step++;}
+    else{state.flashState.progress=100;state.flashState.statusText='Done.';state.flashState.phase='done';clearInterval(flashIntervalId);flashIntervalId=null;
+      showNotification('Flash complete',`${device.name} — firmware written successfully`,'flash-success');
+      setTimeout(()=>{state.flashState=null;if(device.status==='bootloader'){device.status='connected';connectedDeviceIds.delete(deviceId);setTimeout(()=>{connectedDeviceIds.add(deviceId);renderDevices();showNotification('Device rebooted',`${device.name} back online`,'connect');},1200);}renderDevices();},2500);
+    }
+    renderDevices();
+  },350);
+}
+function cancelFlash(){if(flashIntervalId){clearInterval(flashIntervalId);flashIntervalId=null;}state.flashState=null;renderDevices();}
+
+// ─── Serial Console ───────────────────────
+const serialLines=[
+  {text:'ESP-ROM:esp32s3-20210327',cls:''},{text:'rst:0x1 (POWERON_RESET),boot:0x8 (SPI_FAST_FLASH_BOOT)',cls:''},
+  {text:'SPIWP:0xee',cls:''},{text:'mode:DIO, clock div:1',cls:''},{text:'load:0x3fff0030,len:1184',cls:''},
+  {text:'load:0x40078000,len:13232',cls:''},{text:'load:0x40080400,len:3028',cls:''},{text:'entry 0x400805e4',cls:''},
+  {text:'I (29) boot: ESP-IDF v5.1.2 2nd stage bootloader',cls:'info'},{text:'I (36) boot: compile time Feb 10 2026 09:15:33',cls:'info'},
+  {text:'I (40) boot: chip revision: v0.1',cls:'info'},{text:'I (43) boot: Pro CPU up…',cls:'info'},
+  {text:'I (47) boot: Single core mode',cls:'info'},{text:'I (52) boot: SPI Speed      : 40MHz',cls:'info'},
+  {text:'I (56) boot: SPI Mode       : DIO',cls:'info'},{text:'I (60) boot: SPI Flash Size : 8MB',cls:'info'},
+  {text:'I (65) boot: Partition Table:',cls:'info'},{text:'I (68) boot: ## Label            Usage  Type  SubType Offset  Length',cls:'info'},
+  {text:'I (76) boot:  0 nvs              data   01    02     0x9000  0x4000',cls:'info'},
+  {text:'I (83) boot:  1 phy_init         data   01    01     0xd000  0x1000',cls:'info'},
+  {text:'I (91) boot:  2 factory          app    00    00     0x10000 0x3f0000',cls:'info'},
+  {text:'I (98) boot: End of partition table',cls:'info'},
+  {text:'I (103) esp_image: segment 0: paddr=00010020 vaddr=3c020020 size=1b778h (112248) map',cls:'info'},
+  {text:'I (142) boot: Loaded app from partition at offset 0x10000',cls:'info'},
+  {text:'I (143) boot: Disabling RNG early entropy source…',cls:'info'},
+  {text:'I (143) cpu_start: Pro CPU up.',cls:'info'},{text:'I (146) cpu_start: Single core mode',cls:'info'},
+  {text:'I (146) cpu_start: Pro CPU start user code',cls:'info'},{text:'I (146) cpu_start: cpu freq: 160000000',cls:'info'},
+  {text:'I (146) cpu_start: Application information:',cls:'info'},{text:'I (146) cpu_start: Project name:     sensor-node',cls:'info'},
+  {text:'I (146) cpu_start: App version:      1.3.2',cls:'info'},{text:'I (146) cpu_start: Compile time:     Jun 18 2026 14:22:07',cls:'info'},
+  {text:'W (154) cpu_start: Chip revision is newer than SDK',cls:'warn'},
+  {text:'I (158) heap_init: Initializing. RAM available for dynamic allocation:',cls:'info'},
+  {text:'I (165) heap_init: At 3FC94C78 len 0004B388 (300 KiB): D/IRAM',cls:'info'},
+  {text:'I (186) spi_flash: detected chip: generic',cls:'info'},{text:'I (190) spi_flash: flash io: dio',cls:'info'},
+  {text:'W (194) spi_flash: Detected size(8192k) larger than the size in the binary image header(4096k)',cls:'warn'},
+  {text:'I (217) main: Starting sensor-node v1.3.2',cls:'info'},
+  {text:'I (224) gpio: GPIO[2]| InputEn: 0| OutputEn: 1| IntrEn: 0',cls:'info'},
+  {text:'I (232) main: LED initialized on GPIO 2',cls:'info'},
+  {text:'I (238) wifi: wifi driver task: 3fc96ca0, prio:23, stack:6656, core=0',cls:'info'},
+  {text:'I (252) wifi: wifi firmware version: 4.5',cls:'info'},{text:'I (268) wifi: wifi certification: 20240102',cls:'info'},
+  {text:'I (284) wifi: config NVS flash: enabled',cls:'info'},{text:'I (301) wifi: config nano formating: disabled',cls:'info'},
+  {text:'I (318) phy_init: phy_version 500,0,0',cls:'info'},{text:'I (342) phy_init: BBPLL: 160 MHz',cls:'info'},
+  {text:'I (358) wifi: Starting wifi',cls:'info'},{text:'I (372) wifi: mode: sta (7c:df:a1:e2:b3:c4)',cls:'info'},
+  {text:'I (388) wifi: Started wifi',cls:'info'},{text:'I (402) main: WiFi station mode active',cls:'info'},
+  {text:'I (418) main: Scanning for networks…',cls:'info'},{text:'I (632) wifi: scan result: 7 APs found',cls:'info'},
+  {text:'I (648) main: Connecting to "Workshop-2.4G"…',cls:'info'},
+  {text:'I (812) wifi: connected to Workshop-2.4G, channel 6',cls:'info'},
+  {text:'I (828) wifi: got ip:192.168.1.47',cls:'info'},{text:'I (842) main: IP address: 192.168.1.47',cls:'info'},
+  {text:'I (858) main: MQTT broker at 192.168.1.10:1883',cls:'info'},
+  {text:'I (872) mqtt_client: Connecting to broker…',cls:'info'},{text:'I (901) mqtt_client: Connected',cls:'info'},
+  {text:'I (918) main: Subscribed to sensor/node/cmd',cls:'info'},
+  {text:'I (934) main: Publishing telemetry every 30s',cls:'info'},
+  {text:'I (964) sensor: BME280 initialized at addr 0x76',cls:'info'},
+  {text:'I (978) sensor: Reading: 23.4°C, 45.2% RH, 1013.25 hPa',cls:'info'},
+  {text:'I (1008) sensor: Reading: 23.5°C, 45.1% RH, 1013.22 hPa',cls:'info'},
+  {text:'I (1038) sensor: Reading: 23.5°C, 45.0% RH, 1013.20 hPa',cls:'info'},
+];
+let serialLineIndex=0;
+
+function openSerial(deviceId){
+  const device=devices.find(d=>d.id===deviceId);if(!device||!device.port)return;
+  state.serialOpen=true;state.serialDeviceId=deviceId;serialLineIndex=0;
+  document.getElementById('serial-window').classList.add('visible');
+  document.getElementById('serial-window-title').textContent=`Serial Monitor — ${device.name}`;
+  document.getElementById('serial-status-line').textContent=device.port;
+  document.getElementById('serial-output').innerHTML='';
+  startSerialStream();
+}
+function closeSerial(){state.serialOpen=false;state.serialDeviceId=null;document.getElementById('serial-window').classList.remove('visible');stopSerialStream();}
+function startSerialStream(){stopSerialStream();serialIntervalId=setInterval(()=>{if(state.serialPaused)return;if(serialLineIndex>=serialLines.length)serialLineIndex=serialLines.length-4;const l=serialLines[serialLineIndex];appendSerialLine(l.text,l.cls);serialLineIndex++;},180);}
+function stopSerialStream(){if(serialIntervalId){clearInterval(serialIntervalId);serialIntervalId=null;}}
+function appendSerialLine(text,cls){const o=document.getElementById('serial-output');const d=document.createElement('div');d.className='serial-line';let c='';if(state.serialTimestamps){const n=new Date();c+=`<span class="timestamp">${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}.${String(n.getMilliseconds()).padStart(3,'0')}</span>`;}c+=cls?`<span class="${cls}">${escHtml(text)}</span>`:escHtml(text);d.innerHTML=c;o.appendChild(d);o.scrollTop=o.scrollHeight;}
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function toggleTimestamps(){state.serialTimestamps=!state.serialTimestamps;document.getElementById('btn-timestamp').classList.toggle('active',state.serialTimestamps);}
+function togglePause(){state.serialPaused=!state.serialPaused;const b=document.getElementById('btn-pause');b.classList.toggle('active',state.serialPaused);b.innerHTML=state.serialPaused?'<svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor"><path d="M1 0.5L9 5L1 9.5z"/></svg> Resume':'<svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor"><rect x="1" y="1" width="3" height="8" rx="0.5"/><rect x="6" y="1" width="3" height="8" rx="0.5"/></svg> Pause';}
+function clearSerial(){document.getElementById('serial-output').innerHTML='';}
+function sendSerial(){const i=document.getElementById('serial-input');if(!i.value.trim())return;appendSerialLine('> '+i.value,'info');i.value='';}
+
+// ─── Settings ─────────────────────────────
+function openSettings(){state.settingsOpen=true;document.getElementById('settings-window').classList.add('visible');renderSettingsTab(state.settingsTab);}
+function closeSettings(){state.settingsOpen=false;document.getElementById('settings-window').classList.remove('visible');}
+function showSettingsTab(tab,el){state.settingsTab=tab;document.querySelectorAll('.settings-nav-item').forEach(n=>n.classList.remove('active'));if(el)el.classList.add('active');renderSettingsTab(tab);}
+function renderSettingsTab(tab){
+  const c=document.getElementById('settings-content');
+  if(tab==='general'){c.innerHTML=`<div class="settings-section-title">General</div>
+    <div class="setting-row"><div><div class="setting-label">Launch at login</div><div class="setting-desc">Start Chirpset automatically when you log in</div></div><div class="toggle ${state.settings.launchAtLogin?'on':''}" onclick="toggleSetting('launchAtLogin',this)"><div class="toggle-knob"></div></div></div>
+    <div class="setting-row"><div><div class="setting-label">Auto-reconnect serial</div><div class="setting-desc">Reopen serial monitor when a known device is plugged back in</div></div><div class="toggle ${state.settings.autoReconnect?'on':''}" onclick="toggleSetting('autoReconnect',this)"><div class="toggle-knob"></div></div></div>
+    <div class="setting-row"><div><div class="setting-label">Check for updates</div><div class="setting-desc">Automatically check for new versions</div></div><div class="toggle on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div></div>`;}
+  else if(tab==='notifications'){c.innerHTML=`<div class="settings-section-title">Notifications</div>
+    <div class="setting-row"><div><div class="setting-label">Enable notifications</div><div class="setting-desc">Show system notifications for device events</div></div><div class="toggle ${state.settings.showNotifications?'on':''}" onclick="toggleSetting('showNotifications',this)"><div class="toggle-knob"></div></div></div>
+    <div class="setting-row"><div><div class="setting-label">Notification level</div><div class="setting-desc">Choose which events trigger notifications</div></div><select class="settings-select" onchange="state.settings.notificationLevel=this.value"><option value="all" ${state.settings.notificationLevel==='all'?'selected':''}>All events</option><option value="connect-only" ${state.settings.notificationLevel==='connect-only'?'selected':''}>Connect / disconnect only</option><option value="bootloader-only" ${state.settings.notificationLevel==='bootloader-only'?'selected':''}>Bootloader mode only</option></select></div>
+    <div class="setting-row"><div><div class="setting-label">Bootloader-mode alerts</div><div class="setting-desc">Distinct notification when a device enters flashable state</div></div><div class="toggle ${state.settings.showBootloaderNotifications?'on':''}" onclick="toggleSetting('showBootloaderNotifications',this)"><div class="toggle-knob"></div></div></div>`;}
+  else if(tab==='tools'){c.innerHTML=`<div class="settings-section-title">Bundled Tools</div>
+    <div class="tool-row"><span class="tool-name">esptool</span><span class="tool-version">v4.7.0</span><span class="tool-status">Bundled</span></div>
+    <div class="tool-row"><span class="tool-name">avrdude</span><span class="tool-version">v7.3</span><span class="tool-status">Bundled</span></div>
+    <div class="tool-row"><span class="tool-name">bossac</span><span class="tool-version">v1.9.1</span><span class="tool-status">Bundled</span></div>
+    <div class="tool-row"><span class="tool-name">dfu-util</span><span class="tool-version">v0.11</span><span class="tool-status">Bundled</span></div>
+    <div class="tool-row"><span class="tool-name">stm32flash</span><span class="tool-version">v0.7</span><span class="tool-status">Bundled</span></div>
+    <div class="tool-row"><span class="tool-name">picotool</span><span class="tool-version">v2.0.0</span><span class="tool-status">Bundled</span></div>
+    <div class="tool-row"><span class="tool-name">teensy_loader_cli</span><span class="tool-version">v2.9</span><span class="tool-status">Bundled</span></div>`;}
+}
+function toggleSetting(key,el){state.settings[key]=!state.settings[key];el.classList.toggle('on',state.settings[key]);}
+
+// ─── Notifications ────────────────────────
+function showNotification(title,text,type){
+  const container=document.getElementById('notification-container');
+  const birdColors={connect:'oklch(72% 0.19 150)',disconnect:'oklch(62% 0.22 25)',bootloader:'oklch(75% 0.16 85)','flash-success':'oklch(72% 0.19 150)'};
+  const birdFills={connect:'rgba(255,255,255,0.85)',disconnect:'rgba(255,255,255,0.5)',bootloader:'oklch(75% 0.16 85)','flash-success':'rgba(255,255,255,0.85)'};
+  const col=birdColors[type]||birdColors.connect;
+  const fill=birdFills[type]||birdFills.connect;
+  const notif=document.createElement('div');notif.className='notification';
+  notif.innerHTML=`<div class="notif-icon ${type}">
+    <svg width="18" height="16" viewBox="0 0 20 18" fill="none">
+      <path d="M3 11 C3 7.5 4.5 5 7.5 4.5 L10.5 4.5 C13 4.5 14 6.2 14 8.5 L14 10.5 C14 12.2 12.5 13.2 10 13.2 L6 13.2 C4 13.2 3 12 3 11Z" fill="${fill}"/>
+      <line x1="9" y1="4.5" x2="9.5" y2="1.8" stroke="${fill}" stroke-width="0.9"/>
+      <circle cx="9.5" cy="1.5" r="1" fill="${col}"/>
+      <circle cx="11" cy="7" r="2" fill="#1a1a1a"/><circle cx="11.5" cy="6.5" r="0.7" fill="white"/>
+      <path d="M14 6 L17.5 4.8 L17 7 Z" fill="#E8A838"/>
+      <path d="M14 8 L17 9 L17 7 Z" fill="#D49030"/>
+      <path d="M17.5 5 C18.8 7 18.8 8.5 17.5 9.5" stroke="${fill}" stroke-width="0.6" fill="none" opacity="0.5"/>
+    </svg>
+  </div>
+  <div class="notif-body"><div class="notif-title">${title}</div><div class="notif-text">${text}</div></div>`;
+  container.appendChild(notif);
+  setTimeout(()=>{notif.classList.add('exiting');setTimeout(()=>notif.remove(),250);},3500);
+}
+
+// ─── Device Connect/Disconnect ────────────
+function disconnectDevice(id){
+  const device=devices.find(d=>d.id===id);if(!device)return;
+  if(state.flashState&&state.flashState.deviceId===id)cancelFlash();
+  if(state.serialDeviceId===id)closeSerial();
+  if(state.selectedDevice===id)state.selectedDevice=null;
+  connectedDeviceIds.delete(id);const prevStatus=device.status;device.status='disconnected';renderDevices();
+  showNotification('Device disconnected',`${device.name} removed`,'disconnect');
+  setTimeout(()=>{connectedDeviceIds.add(id);device.status=prevStatus==='bootloader'?'bootloader':'connected';renderDevices();showNotification(prevStatus==='bootloader'?'Bootloader mode detected':'Device connected',`${device.name} — ${device.port||device.volumePath}`,prevStatus==='bootloader'?'bootloader':'connect');},3000);
+}
+
+// ─── Init ─────────────────────────────────
+function init(){updateClock();setInterval(updateClock,10000);renderDevices();state.selectedDevice='esp32s3-1';renderDevices();
+  setTimeout(()=>{showNotification('Chirpset running','Monitoring serial ports for connected devices','connect');},600);
+}
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
