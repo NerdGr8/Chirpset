@@ -1,4 +1,20 @@
-# Chirpset
+<p align="center">
+  <img src="assets/icon.png" alt="Chirpset icon" width="128">
+</p>
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/wordmark-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="assets/wordmark-light.png">
+    <img src="assets/wordmark-dark.png" alt="Chirpset" width="440">
+  </picture>
+</p>
+
+<p align="center">
+  Serial devices, sorted. A macOS menu bar app for flashing and monitoring maker boards.
+</p>
+
+---
 
 A macOS menu bar app for working with serial/USB maker boards — ESP32, Raspberry Pi Pico,
 Arduino, and friends. It lives in the menu bar, keeps a live list of what's plugged in,
